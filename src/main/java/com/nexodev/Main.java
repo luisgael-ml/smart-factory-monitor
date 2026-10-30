@@ -11,6 +11,13 @@ public class Main {
         Scanner sc = new Scanner(System.in);
         int opcion;
 
+        // Verifica la conexión y si va cifrada antes de mostrar el menú
+        try {
+            System.out.println("Conexión establecida. Cifrado SSL: " + Conexion.estadoSSL());
+        } catch (Exception e) {
+            System.err.println("No se pudo conectar: " + e.getMessage());
+        }
+
         do {
             System.out.println("\n=== SMART FACTORY MONITOR ===");
             System.out.println("1. Insertar sensor");

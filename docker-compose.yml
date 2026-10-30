@@ -1,11 +1,16 @@
 services:
-  # Base de datos PostgreSQL 16
+  # Base de datos PostgreSQL 16 con SSL activado
   postgres:
     image: postgres:16
     container_name: pg-sensores
     environment:
-      POSTGRES_PASSWORD: admin123
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-admin123}   # del archivo .env; admin123 si no existe
       POSTGRES_DB: smartfactory
+    # Activa SSL con el certificado autofirmado que trae la imagen
+    command: >
+      -c ssl=on
+      -c ssl_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+      -c ssl_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
     ports:
       - "5432:5432"
     volumes:
@@ -22,6 +27,8 @@ services:
     working_dir: /app
     environment:
       DB_HOST: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-admin123}   # del archivo .env; admin123 si no existe
+      DB_SSLMODE: require
     volumes:
       - ./:/app
       - m2:/root/.m2          # guarda el driver descargado para no bajarlo cada vez
