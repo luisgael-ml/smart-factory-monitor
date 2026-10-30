@@ -1,0 +1,36 @@
+services:
+  # Base de datos PostgreSQL 16
+  postgres:
+    image: postgres:16
+    container_name: pg-sensores
+    environment:
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: smartfactory
+    ports:
+      - "5432:5432"
+    volumes:
+      # Crea la tabla y los datos iniciales la primera vez que arranca
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d smartfactory"]
+      interval: 3s
+      retries: 10
+
+  # Aplicación Java (JDK 17 + Maven dentro del contenedor, no requiere instalarlos)
+  app:
+    image: maven:3.9-eclipse-temurin-17
+    working_dir: /app
+    environment:
+      DB_HOST: postgres
+    volumes:
+      - ./:/app
+      - m2:/root/.m2          # guarda el driver descargado para no bajarlo cada vez
+    command: mvn -q compile exec:java
+    stdin_open: true
+    tty: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  m2:
